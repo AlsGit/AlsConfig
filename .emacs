@@ -1,25 +1,33 @@
 ;; .emacs --- fichier de configuration général de GNU Emacs
 
+;; ***Date de création : 14/03/2016***
+;; ***Dernière modification le 18/03/2016 à 21:03:08***
+
 ;; Raccourcis intéressants :
-;; C-M-n : place le curseur à la fin d'un bloc
-;; C-M-p : place le curseur au début d'un bloc
+;; C-M-n : curseur à la fin d'un bloc
+;; C-M-p : curseur au début d'un bloc
+;; C-h b : tous les raccourcis possibles pour le buffer courant
 ;; C-t : inverse deux lettres
 ;; C-x <backspace> : supprime le paragraphe précédent
+;; C-x SPC : marque pour sélection en rectangle
 ;; C-x 4 C-f : affiche un nouveau buffer avec le fichier recherché
 ;; C-x r t : remplace un rectangle par les caractères renseignés
 ;; C-x C-b : liste des buffers
 ;; C-x C-o : une seule ligne vide entre deux lignes trop espacées
 ;; C-x C-t : inverse deux lignes
+;; M-% : demande remplacement mot
 ;; M-a : place le curseur au début d'une phrase
 ;; M-d : supprime le mot suivant le curseur
 ;; M-e : curseur en fin de phrase
 ;; M-k : supprime le prochain paragraphe
 ;; M-m : place le curseur au début d'une ligne indentée
 ;; M-t : inverse deux mots
+;; M-x describe-minor-mode : raccourcis clavier utilisé par un mode mineur
+;; M-x hs-minor-mode : affiche/cache des bouts de codes
 ;; M-SPC : une seule espace entre deux mots d'une seule ligne
 
 ;; Liste des répertoires où Emacs doit chercher ses fichiers de configuration
-(let ((default-directory  "~/.emacs.d/lisp"))
+(let ((default-directory "~/.emacs.d/lisp"))
   (setq load-path
 	(append
 	 (let ((load-path (copy-sequence load-path))) ;; Shadow
@@ -29,6 +37,7 @@
 	 load-path)))
 
 (blink-cursor-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;; curseur fixe
+(defun startup-echo-area-message () "") ;;;;;;;;;; pas de message dans echo area
 (menu-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre de menu
 (require 'alstheme) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; alstheme = tangotango-theme + ample-theme
 (scroll-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre déroulante
@@ -37,7 +46,6 @@
 (setq display-time-default-load-average nil) ;;;;; temps de chargement désactivé
 (setq inhibit-startup-screen t) ;;;;;;;;;;;;;;;;;; pas de message de bienvenue
 (setq initial-scratch-message nil) ;;;;;;;;;;;;;;; pas de message dans *scratch*
-(defun startup-echo-area-message () "") ;;;;;;;;;; pas de message dans echo area 
 (toggle-frame-fullscreen) ;;;;;;;;;;;;;;;;;;;;;;;; plein écran
 (tool-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre d'outils
 (defalias 'yes-or-no-p 'y-or-n-p) ;;;;;;;;;;;;;;;; "y/n" au lieu de "yes/no"
@@ -73,17 +81,13 @@
  header-line-format
  (list
   "%e"
-  "("
-  '(:propertize "%2l" face (:foreground "yellow" :weight bold))
-  "/"
-  '(:eval (format "%d" (line-number-at-pos (point-max))))
-  ","
-  '(:propertize "%2c" face (:foreground "yellow4"))
-  ")" " "
+  "(" '(:propertize "%2l" face (:foreground "yellow" :weight bold)) "/"
+  '(:eval (format "%d" (line-number-at-pos (point-max)))) ","
+  '(:propertize "%2c" face (:foreground "yellow4")) ")" " "
   '(:eval
     (concat
      (if (or (string-match "^/su\\(do\\)?:" default-directory) (equal user-login-name "root"))
- 	 (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face '(:foreground "red2" :weight bold)))
+	 (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face '(:foreground "red2" :weight bold)))
        (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face 'directory-name-face)))
      (propertize (file-name-nondirectory (or load-file-name buffer-file-name)) 'face 'mode-line-buffer-id)))
   '(:eval (propertize (when (equal (buffer-file-name) nil) (buffer-name)) 'face 'mode-line-buffer-id))
@@ -101,7 +105,7 @@
 (require 'hl-line+)
 (toggle-hl-line-when-idle t)
 (hl-line-when-idle-interval 1)
-(set-face-background 'hl-line "gray25")
+(set-face-background 'hl-line "gray15")
 
 ;; Redimensionnement des buffers
 (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
@@ -180,3 +184,14 @@
 ;; Sauvegarde la position du curseur avant la fermeture
 (require 'saveplace)
 (toggle-save-place)
+
+;; Timestamps
+(add-hook 'before-save-hook 'time-stamp)
+(add-hook 'write-file-hooks 'time-stamp)
+(setq time-stamp-pattern "8/Dernière modification le\\\\?[[:space:]]+%02d/%02m/%:y à %02H:%02M:%02S\\\\?[***]")
+
+;; Ligne courante visible
+(require 'hlinum)
+(hlinum-activate)
+(setq linum-highlight-in-all-buffersp t)
+(set-face-attribute 'linum-highlight-face nil :foreground "yellow" :background "gray15")
