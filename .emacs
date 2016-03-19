@@ -1,7 +1,7 @@
 ;; .emacs --- fichier de configuration général de GNU Emacs
 
 ;; ***Date de création : 14/03/2016***
-;; ***Dernière modification le 18/03/2016 à 21:03:08***
+;; ***Dernière modification le 19/03/2016 à 09:34:28***
 
 ;; Raccourcis intéressants :
 ;; C-M-n : curseur à la fin d'un bloc
@@ -46,7 +46,7 @@
 (setq display-time-default-load-average nil) ;;;;; temps de chargement désactivé
 (setq inhibit-startup-screen t) ;;;;;;;;;;;;;;;;;; pas de message de bienvenue
 (setq initial-scratch-message nil) ;;;;;;;;;;;;;;; pas de message dans *scratch*
-(toggle-frame-fullscreen) ;;;;;;;;;;;;;;;;;;;;;;;; plein écran
+;;(toggle-frame-fullscreen) ;;;;;;;;;;;;;;;;;;;;;; remplacé par "emacs.fullscreen:fullboth" dans .Xresources
 (tool-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre d'outils
 (defalias 'yes-or-no-p 'y-or-n-p) ;;;;;;;;;;;;;;;; "y/n" au lieu de "yes/no"
 (delete-selection-mode) ;;;;;;;;;;;;;;;;;;;;;;;;;; écrire dans une sélection la remplace
