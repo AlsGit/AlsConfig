@@ -1,7 +1,7 @@
 ;; .emacs --- fichier de configuration général de GNU Emacs
 
 ;; ***Date de création : 14/03/2016***
-;; ***Dernière modification le 19/03/2016 à 09:34:28***
+;; ***Dernière modification le 19/03/2016 à 20:02:30***
 
 ;; Raccourcis intéressants :
 ;; C-M-n : curseur à la fin d'un bloc
@@ -36,18 +36,32 @@
 	    (normal-top-level-add-subdirs-to-load-path)))
 	 load-path)))
 
+;; Paquets pour Emacs
+(require 'package)
+(when (>= emacs-major-version 24)
+  (setq package-archives
+	(append
+	 '(("elpa" . "http://tromey.com/elpa/")
+	   ("marmalade" . "http://marmalade-repo.org/packages/")
+	   ("melpa" . "http://melpa.org/packages/"))
+	 package-archives)))
+(package-initialize)
+
+;; Thème
+(require 'solarized-dark-theme)
+(set-face-attribute 'header-line nil :underline nil :overline "#093b3f")
+(set-face-attribute 'vertical-border nil :foreground "#093b3f")
+
+(menu-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; .Xresources : "emacs.menuBar: off"
+(scroll-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; .Xresources : "emacs.verticalScrollBars: off"
+(tool-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; .Xresources : "emacs.toolBar: off"
 (blink-cursor-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;; curseur fixe
 (defun startup-echo-area-message () "") ;;;;;;;;;; pas de message dans echo area
-(menu-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre de menu
-(require 'alstheme) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; alstheme = tangotango-theme + ample-theme
-(scroll-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre déroulante
 (set-fringe-mode '(0 . 0)) ;;;;;;;;;;;;;;;;;;;;;;; épaisseur des lignes verticales
 (setq column-number-mode t) ;;;;;;;;;;;;;;;;;;;;;; affiche le numéro de colonne
 (setq display-time-default-load-average nil) ;;;;; temps de chargement désactivé
 (setq inhibit-startup-screen t) ;;;;;;;;;;;;;;;;;; pas de message de bienvenue
 (setq initial-scratch-message nil) ;;;;;;;;;;;;;;; pas de message dans *scratch*
-;;(toggle-frame-fullscreen) ;;;;;;;;;;;;;;;;;;;;;; remplacé par "emacs.fullscreen:fullboth" dans .Xresources
-(tool-bar-mode 0) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; pas de barre d'outils
 (defalias 'yes-or-no-p 'y-or-n-p) ;;;;;;;;;;;;;;;; "y/n" au lieu de "yes/no"
 (delete-selection-mode) ;;;;;;;;;;;;;;;;;;;;;;;;;; écrire dans une sélection la remplace
 (display-battery-mode) ;;;;;;;;;;;;;;;;;;;;;;;;;;; pourcentage batterie dans la mode-line
@@ -65,17 +79,6 @@
 (show-paren-mode) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; appariemment visuel des paires
 (windmove-default-keybindings 'meta) ;;;;;;;;;;;;; M-<flèche> pour changer de fenêtres
 
-;; Paquets pour Emacs
-(require 'package)
-(when (>= emacs-major-version 24)
-  (setq package-archives
-	(append
-	 '(("elpa" . "http://tromey.com/elpa/")
-	   ("marmalade" . "http://marmalade-repo.org/packages/")
-	   ("melpa" . "http://melpa.org/packages/"))
-	 package-archives)))
-(package-initialize)
-
 ;; header-line : ligne de pouvoir en haut
 (setq-default
  header-line-format
@@ -87,14 +90,13 @@
   '(:eval
     (concat
      (if (or (string-match "^/su\\(do\\)?:" default-directory) (equal user-login-name "root"))
-	 (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face '(:foreground "red2" :weight bold)))
-       (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face 'directory-name-face)))
+	 (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face '(:foreground "#990a1b" :weight bold)))
+       (replace-regexp-in-string "^.*/\\(.*\\)/" "\\1/" (propertize default-directory 'face '(:foreground "#00629d" :weight bold))))
      (propertize (file-name-nondirectory (or load-file-name buffer-file-name)) 'face 'mode-line-buffer-id)))
   '(:eval (propertize (when (equal (buffer-file-name) nil) (buffer-name)) 'face 'mode-line-buffer-id))
   '(:eval (cond (buffer-read-only (propertize "[Lecture seule]" 'face '(:foreground "red3")))))
   '(:eval (cond ((buffer-modified-p) (propertize "[Modifié]" 'face '(:foreground "orange4"))))) " "
-  "%M" " "
-  "%-"))
+  "%M" " "))
 (setq-default mode-line-format nil)
 
 ;; Affiche la date
@@ -103,9 +105,9 @@
 
 ;; Surligner ligne pour ne pas perdre de vue le curseur
 (require 'hl-line+)
-(toggle-hl-line-when-idle t)
+(toggle-hl-line-when-idle)
 (hl-line-when-idle-interval 1)
-(set-face-background 'hl-line "gray15")
+(set-face-background 'hl-line "#103b46")
 
 ;; Redimensionnement des buffers
 (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
@@ -114,71 +116,17 @@
 (global-set-key (kbd "C-S-<up>") 'enlarge-window)
 
 ;; Incrémente ou décrémente le nombre sous le curseur
-(defun thing-at-point-goto-end-of-integer ()
-  "Go to end of integer at point."
-  (let ((inhibit-changing-match-data t))
-    ;; Skip over optional sign
-    (when (looking-at "[+-]")
-      (forward-char 1))
-    ;; Skip over digits
-    (skip-chars-forward "[[:digit:]]")
-    ;; Check for at least one digit
-    (unless (looking-back "[[:digit:]]")
-      (error "Aucun nombre ici"))))
-(put 'integer 'beginning-op 'thing-at-point-goto-end-of-integer)
-
-(defun thing-at-point-goto-beginning-of-integer ()
-  "Go to beginning of integer at point."
-  (let ((inhibit-changing-match-data t))
-    ;; Skip backward over digits
-    (skip-chars-backward "[[:digit:]]")
-    ;; Check for digits and optional sign
-    (unless (looking-at "[+-]?[[:digit:]]")
-      (error "Aucun nombre ici"))
-    ;; Skip backward over optional sign
-    (when (looking-back "[+-]")
-	(backward-char 1))))
-(put 'integer 'beginning-op 'thing-at-point-goto-beginning-of-integer)
-
-(defun thing-at-point-bounds-of-integer-at-point ()
-  "Get boundaries of integer at point."
-  (save-excursion
-    (let (beg end)
-      (thing-at-point-goto-beginning-of-integer)
-      (setq beg (point))
-      (thing-at-point-goto-end-of-integer)
-      (setq end (point))
-      (cons beg end))))
-(put 'integer 'bounds-of-thing-at-point 'thing-at-point-bounds-of-integer-at-point)
-
-(defun thing-at-point-integer-at-point ()
-  "Get integer at point."
-  (let ((bounds (bounds-of-thing-at-point 'integer)))
-    (string-to-number (buffer-substring (car bounds) (cdr bounds)))))
-(put 'integer 'thing-at-point 'thing-at-point-integer-at-point)
-
-(defun increment-integer-at-point (&optional inc)
-  "Increment integer at point by one. With numeric prefix arg INC, increment the integer by INC amount."
-  (interactive "p")
-  (let ((inc (or inc 1))
-	(n (thing-at-point 'integer))
-	(bounds (bounds-of-thing-at-point 'integer)))
-    (delete-region (car bounds) (cdr bounds))
-    (insert (int-to-string (+ n inc)))))
-
-(defun decrement-integer-at-point (&optional dec)
-  "Decrement integer at point by one. With numeric prefix arg DEC, decrement the integer by DEC amount."
-  (interactive "p")
-  (increment-integer-at-point (- (or dec 1))))
-
+(require 'integer-at-point)
 (global-set-key (kbd "C-<") 'increment-integer-at-point)
 (global-set-key (kbd "C->") 'decrement-integer-at-point)
 
 ;; Arrière-plan désactivé pour le terminal
 (defun on-after-init ()
   (unless (display-graphic-p (selected-frame))
-    (set-face-background 'default "unspecified-bg" (selected-frame))
-    (set-face-background 'mode-line "unspecified-bg" (selected-frame))))
+    (dolist (face '(default header-line linum))
+      (set-face-background face "unspecified-bg" (selected-frame)))
+    (menu-bar-mode 0)
+    ))
 (add-hook 'window-setup-hook 'on-after-init)
 
 ;; Sauvegarde la position du curseur avant la fermeture
@@ -194,4 +142,4 @@
 (require 'hlinum)
 (hlinum-activate)
 (setq linum-highlight-in-all-buffersp t)
-(set-face-attribute 'linum-highlight-face nil :foreground "yellow" :background "gray15")
+(set-face-attribute 'linum-highlight-face nil :foreground "yellow" :background "#103b46")
